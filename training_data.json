@@ -2,7 +2,7 @@
     "training_data": [
     {
         "tag":"greetings",
-        "patterns":["Hi", "How are you", "Hello", "Good day mate", "Whats poppin", "Is anyone there?", "yo"],
+        "patterns":["Hi", "How are you", "Hello", "Good day mate", "Whats poppin", "Is anyone there?", "yo", "hey"],
         "responses":["Hello!", "Namaste", "Welcome", "Hey, what can I do for you", "Wanna talk about Dhairya(DS)?"]
     },
     {
