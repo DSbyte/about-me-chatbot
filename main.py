@@ -85,3 +85,27 @@ def bag_of_words(s, words):
                 bag[i] = 1
     
     return numpy.array(bag)
+
+#chat
+
+def chat():
+    print("Start texting the bot! Ask it anything about Dhairya (DS) (type 'quit' to stop")
+    while True:
+        inp = input("You: ")
+        if inp.lower() == "quit":
+            break
+
+        results = model.predict([bag_of_words(inp, words)])[0]
+        results_id = numpy.argmax(results)
+        tag = tags[results_id]
+
+        if results[results_id] > 0.5:
+            for tg in data["training_data"]:
+                if tg["tag"] == tag:
+                    responses = tg['responses']
+            print(random.choice(responses))
+        else:
+            print("I didnt get that, try again!")
+
+
+chat()
