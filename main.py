@@ -24,18 +24,22 @@ patterns_pattern = []
 patterns_tags = []
 
 for d in data["training_data"]:
-    tag = data["tag"]
-    tags.append(tag)
-    for p in data["patterns"]:
+   
+    for p in d["patterns"]:
         words = nltk.word_tokenize(p)
-        patterns.extends(words)
+        patterns.extend(words)
         patterns_pattern.append(words)
-        patterns_tags.append(tags)
+        patterns_tags.append(d["tag"])
+    
+    if d["tag"] not in tags:
+        tags.append(d["tag"])
 
-tags = sorted(tags)
 
 ignore_case = ['?','!','$','@','#','&']
-patterns = sorted(list(set([stemmer.stem(w) for w in patterns if w not in ignore_case])))
+patterns =[stemmer.stem(w.lower()) for w in patterns if w not in "?"] 
+patterns = sorted(list(set(patterns)))
+tags = sorted(tags)
+
 
 training = []
 output = []
@@ -46,7 +50,7 @@ for num, doc in enumerate(patterns_pattern):
     bag = []
     wrds = [stemmer.stem(w) for w in doc]
 
-    for w in wrds:
+    for w in patterns:
         if w in wrds:
             bag.append(1)
         else:
@@ -66,22 +70,21 @@ output = numpy.array(output)
 neural_net = tflearn.input_data(shape=[None, len(training[0])])
 neural_net = tflearn.fully_connected(neural_net, 8)
 neural_net = tflearn.fully_connected(neural_net, 8)
-neural_net = tflearn.fully_connected(neural_net, 8)
 neural_net = tflearn.fully_connected(neural_net, len(output[0]), activation="softmax")
 neural_net = tflearn.regression(neural_net)
 
-model = tflearn.DNN(model)
-model.fit(training, epoch=1000, batch_size=8, show_metric=True)
+model = tflearn.DNN(neural_net)
+model.fit(training, output, n_epoch=5000, batch_size=8, show_metric=True)
 model.save("model.tflearn")
 
-def bag_of_words(s, words):
-    bag = [0 for _ in range(len(words))]
+def bag_of_words(s, patterns):
+    bag = [0 for _ in range(len(patterns))]
     s_words = nltk.word_tokenize(s)
     s_words = [stemmer.stem(word.lower()) for word in s_words]
 
     for se in s_words:
-        for i,w in enumerate(words):
-            if w==se:
+        for i,w in enumerate(patterns):
+            if w == se:
                 bag[i] = 1
     
     return numpy.array(bag)
@@ -95,7 +98,7 @@ def chat():
         if inp.lower() == "quit":
             break
 
-        results = model.predict([bag_of_words(inp, words)])[0]
+        results = model.predict([bag_of_words(inp, patterns)])[0]
         results_id = numpy.argmax(results)
         tag = tags[results_id]
 
